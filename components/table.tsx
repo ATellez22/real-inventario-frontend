@@ -23,7 +23,7 @@ const PrimeReactTable = ({ usuario, conteo, codigo }: PrimeReactTableProps) => {
                 const response = await fetchApi(`inventory/show?txt_usuario=${usuario}&sel_conteo=${conteo}`);
                 setResponseFromApi(response);
             } catch (error) {
-                console.log(error);
+                //console.log("campo vacio");
             }
         };
         mostrar_tabla();

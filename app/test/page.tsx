@@ -8,9 +8,8 @@ const Test = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetchApi('articles');
-                console.log(response);
-                
+                const response = await fetchApi('article');
+                              
                 setArticles(response);
             } catch (error) {
                 console.log(error);

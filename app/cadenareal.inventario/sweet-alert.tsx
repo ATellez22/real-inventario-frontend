@@ -81,7 +81,14 @@ export const sweetAlerMessages = (response:number) => {
         });
     } else if (response == 12) {
         Swal.fire({
-            title: 'NYa no se puede editar el conteo 1 y 2!',
+            title: 'Ya no se puede editar el conteo 1 y 2!',
+            icon: 'warning',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    } else if (response == 13) {
+        Swal.fire({
+            title: 'Error de red!',
             icon: 'warning',
             timer: 2000,
             showConfirmButton: false
