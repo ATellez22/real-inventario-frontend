@@ -361,8 +361,7 @@ const Taking = () => {
 
             <PrimeReactTable
               usuario={formik.values.txt_usuario}
-              conteo={formik.values.sel_conteo}
-              codigo={formik.values.txt_codigo}
+              conteo={formik.values.sel_conteo}             
               //El codigo se envia para que al perder el foco reaccione el useEffect de la tabla y se
               //actualice.
             />
