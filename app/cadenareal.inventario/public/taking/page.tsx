@@ -48,9 +48,9 @@ const Taking = () => {
 
           const response = await fetchApi("inventory", "POST", values);
 
-          if (response) {
+          if (response) {            
+           
             sweetAlerMessages(response); //Mensajes de respuesta
-            setFormSubmitted(true); // Después del envío exitoso, establece formSubmitted en true
 
             formik.setValues({
               ...formik.values, // limpiar campos
@@ -62,8 +62,9 @@ const Taking = () => {
             if (txtCodigoRef.current) {
               (txtCodigoRef.current as HTMLInputElement).focus(); //Foco a txt_cantidad
             }
-
-            setLoading(false); //cerrar indicador de carga en caso de estar activo tras reprocesamiento
+                       
+            setFormSubmitted(true); // Después del envío exitoso, establece formSubmitted en true
+            
           } else {
 
             if (retries < MAX_RETRIES) {
@@ -75,8 +76,7 @@ const Taking = () => {
               }, 1000); // Reintentar después de 1 segundo
 
             } else {
-              alert("Se superó el número máximo de intentos.");
-              setLoading(false); // Ocultar el indicador de carga una vez que la solicitud sea exitosa              
+              alert("Se superó el número máximo de intentos.");                         
             }
 
           }
@@ -92,18 +92,18 @@ const Taking = () => {
             }, 1000);
 
           } else {
-            alert("Se superó el número máximo de intentos.");
-            setLoading(false);           
+            alert("Se superó el número máximo de intentos.");              
           }
 
         } finally {          
+          setLoading(false); //cerrar indicador de carga en caso de estar activo tras reprocesamiento         
           setSubmitting(false); // SetSubmitting se llama incluso en caso de error
         }
       };
 
       setTimeout(() => {
-        setFormSubmitted(false); // Restablece formSubmitted en false luego de 3 segundos
-      }, 3000);
+        setFormSubmitted(false);
+      }, 2000);
 
       performRequest(); // Inicializa la solicitud
     },
@@ -127,14 +127,22 @@ const Taking = () => {
 
           if (response && response.descripcion) {
 
-            formik.setFieldValue("txt_descripcion", response.descripcion);
+            if (response.descripcion === "Inexistente") {
 
-            if (txtCantidadRef.current) {
-              (txtCantidadRef.current as HTMLInputElement).focus();
-            }
+              sweetAlerMessages("Inexistente");
 
-            setLoading(false);
+            } else {
 
+              formik.setFieldValue("txt_descripcion", response.descripcion);
+
+              if (txtCantidadRef.current) {
+                (txtCantidadRef.current as HTMLInputElement).focus();
+              }
+  
+              setLoading(false);
+
+            } 
+           
           } else {
 
             if (retries < MAX_RETRIES) {

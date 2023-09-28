@@ -1,6 +1,6 @@
 import Swal from 'sweetalert2'
 
-export const sweetAlerMessages = (response:number) => {
+export const sweetAlerMessages = (response:number|string) => {
 
     if (response == 1) {
         Swal.fire({
@@ -86,9 +86,9 @@ export const sweetAlerMessages = (response:number) => {
             timer: 2000,
             showConfirmButton: false
         });
-    } else if (response == 13) {
+    } else {
         Swal.fire({
-            title: 'Error de red!',
+            title: response.toString(),
             icon: 'warning',
             timer: 2000,
             showConfirmButton: false
