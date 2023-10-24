@@ -18,13 +18,13 @@ export const Scan = () => {
             // Se ingresó la clave
 
             //no enviar el formulario
-            e.preventDefault();
+            // e.preventDefault();
 
-            // ¿El usuario ha terminado de ingresar manualmente?
-            if (txtCod.val().length >= minChars) {
-                userFinishedEntering = true; // En caso de que el usuario presione la tecla enter
-                inputComplete();
-            }
+            // // ¿El usuario ha terminado de ingresar manualmente?
+            // if (txtCod.val().length >= minChars) {
+            //     userFinishedEntering = true; // En caso de que el usuario presione la tecla enter
+            //     inputComplete();
+            // }
         } else {
             // se ingresó algún otro valor clave
 

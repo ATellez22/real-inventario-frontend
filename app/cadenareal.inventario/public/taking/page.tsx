@@ -7,14 +7,12 @@ import { sweetAlerMessages } from "../../sweet-alert";
 import { fetchApi } from "@/utils/api";
 import { Scan } from "@/utils/scanner";
 import PrimeReactTable from "@/components/table";
-import { Radio } from "react-loader-spinner";
 
 const Taking = () => {
   const txtCantidadRef = useRef<HTMLInputElement | null>(null); //referencia a txt_cantidad para focus
   const txtCodigoRef = useRef<HTMLInputElement | null>(null); //referencia a txt_codigo para focus
   const txtusuarioRef = useRef<HTMLInputElement | null>(null); //referencia a txt_usuario para focus
   const [formSubmitted, setFormSubmitted] = useState(false); //para rastrear si el formulario se ha enviado.
-  const [loading, setLoading] = useState(false); //indicador de carga
 
   const formik = useFormik({
     initialValues: {
@@ -39,19 +37,11 @@ const Taking = () => {
     validateOnChange: false, // Evita que las validaciones se activen automáticamente
 
     onSubmit: async (values, { setSubmitting }) => {
-      let retries = 0;
-      const MAX_RETRIES = 10;
+      try {
+        const response = await fetchApi("inventory", "POST", values);
 
-      const performRequest = async () => {
-
-        try {
-
-          const response = await fetchApi("inventory", "POST", values);
-
-          if (response) {            
-           
-            sweetAlerMessages(response); //Mensajes de respuesta
-
+        if (response) {
+          if (response === "Error de conexion") {
             formik.setValues({
               ...formik.values, // limpiar campos
               txt_codigo: "",
@@ -60,144 +50,83 @@ const Taking = () => {
             });
 
             if (txtCodigoRef.current) {
-              (txtCodigoRef.current as HTMLInputElement).focus(); //Foco a txt_cantidad
+              (txtCodigoRef.current as HTMLInputElement).focus(); //Foco a txt_codigo
             }
-                       
+
+            sweetAlerMessages(response); //Mensajes de respuesta
+          } else {
+            if (txtCodigoRef.current) {
+              (txtCodigoRef.current as HTMLInputElement).focus(); //Foco a txt_codigo
+            }
+
+            sweetAlerMessages(response); //Mensajes de respuesta
+
             setFormSubmitted(true); // Después del envío exitoso, establece formSubmitted en true
-            
-          } else {
-
-            if (retries < MAX_RETRIES) {
-              setLoading(true); //abrir indicador de carga
-              retries++;
-
-              setTimeout(() => {
-                performRequest();
-              }, 1000); // Reintentar después de 1 segundo
-
-            } else {
-              alert("Se superó el número máximo de intentos.");                         
-            }
-
           }
-
-        } catch (error) {
-
-          if (retries < MAX_RETRIES) {
-            setLoading(true);
-            retries++;
-
-            setTimeout(() => {
-              performRequest();
-            }, 1000);
-
-          } else {
-            alert("Se superó el número máximo de intentos.");              
-          }
-
-        } finally {          
-          setLoading(false); //cerrar indicador de carga en caso de estar activo tras reprocesamiento         
-          setSubmitting(false); // SetSubmitting se llama incluso en caso de error
         }
-      };
+      } catch (error) {
+        console.error("Error en el envio:", error);
+      } finally {
+        //setLoading(false); //cerrar indicador de carga en caso de estar activo tras reprocesamiento
+        setSubmitting(false); // SetSubmitting se llama incluso en caso de error
+      }
 
       setTimeout(() => {
         setFormSubmitted(false);
-      }, 2000);
 
-      performRequest(); // Inicializa la solicitud
+        formik.setValues({
+          ...formik.values, // limpiar campos. Reubicado debido a que txt_descripcion no se limpia correctamente.
+          txt_codigo: "",
+          txt_cantidad: "",
+          txt_descripcion: "",
+        });
+      }, 1000);
     },
   });
 
-  useEffect(() => {    
+  useEffect(() => {
     Scan(); //Captura de Scan de JQuery
   }, []);
 
   const buscar = async () => {
-
     if (formik.values.txt_codigo) {
-      let retries = 0;
-      const MAX_RETRIES = 100;
+      try {
+        const response = await fetchApi(`article/${formik.values.txt_codigo}`);
 
-      const performRequest = async () => {
+        if (response === "Error de conexion") {
+          formik.setValues({
+            ...formik.values, // limpiar campos
+            txt_codigo: "",
+            txt_descripcion: "",
+          });
 
-        try {
+          sweetAlerMessages(response);
+        } else if (response.descripcion === "Inexistente") {
+          sweetAlerMessages("Inexistente");
+        } else {
+          formik.setFieldValue("txt_descripcion", response.descripcion);
 
-          const response = await fetchApi(`article/${formik.values.txt_codigo}`);
-
-          if (response && response.descripcion) {
-
-            if (response.descripcion === "Inexistente") {
-
-              sweetAlerMessages("Inexistente");
-
-            } else {
-
-              formik.setFieldValue("txt_descripcion", response.descripcion);
-
-              if (txtCantidadRef.current) {
-                (txtCantidadRef.current as HTMLInputElement).focus();
-              }
-  
-              setLoading(false);
-
-            } 
-           
-          } else {
-
-            if (retries < MAX_RETRIES) {
-              setLoading(true);
-              retries++;
-
-              setTimeout(() => {
-                performRequest();
-              }, 1000); 
-
-            } else {
-              alert("Se superó el número máximo de intentos.");
-              setLoading(false);                          
-            }
-          }
-
-        } catch (error) {
-        
-          if (retries < MAX_RETRIES) {
-            setLoading(true);
-            retries++;
-
-            setTimeout(() => {
-              performRequest();
-            }, 1000); 
-
-          } else {
-            alert("Se superó el número máximo de intentos.");
-            setLoading(false);            
+          if (txtCantidadRef.current) {
+            (txtCantidadRef.current as HTMLInputElement).focus();
           }
         }
-      };
-
-      performRequest(); 
-
+      } catch (error) {
+        console.error("Error en la función buscar:", error);
+      }
     } else {
-      console.log("Campo vacío");      
+      console.log("Campo vacío");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-200">
-      <form id="form" onSubmit={formik.handleSubmit}>
-        {loading && (
-          <div className="fixed inset-0 flex justify-center items-center bg-opacity-10 bg-gray-800 z-50">
-            <Radio
-              visible={true}
-              height="100"
-              width="100"
-              ariaLabel="radio-loading"
-              wrapperStyle={{}}
-              wrapperClass="radio-wrapper"
-            />
-          </div>
-        )}
+      <form
+        id="form"
+        onSubmit={formik.handleSubmit}
+        onKeyDown={(e) => {
+          e.key === "Enter" && formik.handleSubmit; //Guardar con ENTER
+        }}
+      >
         <div className="bg-white w-96 p-6 rounded shadow-sm">
           <h3 className="flex flex-col items-center justify-center mb-4 ">
             <span className="text-gray-700 font-bold text-2xl mb-2">
@@ -228,9 +157,7 @@ const Taking = () => {
             ref={txtusuarioRef}
             required
           />
-          {formSubmitted &&
-          formik.touched.txt_usuario &&
-          formik.errors.txt_usuario ? (
+          {formik.touched.txt_usuario && formik.errors.txt_usuario ? (
             <div className="text-gray-500">{formik.errors.txt_usuario}</div>
           ) : null}
 
@@ -276,9 +203,7 @@ const Taking = () => {
             maxLength={9}
             required
           />
-          {formSubmitted &&
-          formik.touched.txt_ubicacion &&
-          formik.errors.txt_ubicacion ? (
+          {formik.touched.txt_ubicacion && formik.errors.txt_ubicacion ? (
             <div className="text-gray-500">{formik.errors.txt_ubicacion}</div>
           ) : null}
 
@@ -295,18 +220,16 @@ const Taking = () => {
             name="txt_codigo"
             onChange={formik.handleChange}
             onBlur={(e) => {
-              //formik.handleBlur(e); // Ejecutar el evento onBlur de Formik
-              buscar(); // Ejecutar tu evento personalizado
+              formik.handleBlur(e); 
+              buscar(); //Busqueda al perder el foco. Con Scan() se pierde el foco automáticamente.
             }}
             value={formik.values.txt_codigo}
             min="1"
             max="9999999999999"
-            ref={txtCodigoRef}
+            ref={txtCodigoRef} //Referencia personalizada para captura el foco (No es la mejor manera)
             required
           />
-          {formSubmitted &&
-          formik.touched.txt_codigo &&
-          formik.errors.txt_codigo ? (
+          {formik.touched.txt_codigo && formik.errors.txt_codigo ? (
             <div className="text-gray-500">{formik.errors.txt_codigo}</div>
           ) : null}
 
@@ -327,9 +250,7 @@ const Taking = () => {
             readOnly
             required
           />
-          {formSubmitted &&
-          formik.touched.txt_descripcion &&
-          formik.errors.txt_descripcion ? (
+          {formik.errors.txt_descripcion ? (
             <div className="text-gray-500">{formik.errors.txt_descripcion}</div>
           ) : null}
 
@@ -347,14 +268,13 @@ const Taking = () => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.txt_cantidad}
-            min="-9999"
-            max="9999"
-            ref={txtCantidadRef}
+            step="0.01" //Permite el uso de decimales con 'punto'
+            min="-9999.99"
+            max="9999.99"
+            ref={txtCantidadRef} //Referencia personalizada para captura el foco (No es la mejor manera)
             required
           />
-          {formSubmitted &&
-          formik.touched.txt_cantidad &&
-          formik.errors.txt_cantidad ? (
+          {formik.touched.txt_cantidad && formik.errors.txt_cantidad ? (
             <div className="text-gray-500">{formik.errors.txt_cantidad}</div>
           ) : null}
 
@@ -362,14 +282,14 @@ const Taking = () => {
             <button
               type="submit"
               className="bg-green-600 font-bold text-lg w-full text-gray-100 py-2 rounded hover:bg-green-800 transition-colors"
-              disabled={formSubmitted}
+              //disabled={formSubmitted}
             >
               Confirmar
             </button>
 
             <PrimeReactTable
               usuario={formik.values.txt_usuario}
-              conteo={formik.values.sel_conteo}             
+              conteo={formik.values.sel_conteo}
               //El codigo se envia para que al perder el foco reaccione el useEffect de la tabla y se
               //actualice.
             />
