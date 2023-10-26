@@ -16,15 +16,15 @@ import Swal from 'sweetalert2'
 // //Interceptor de respuesta tras recibir la respuesta 
 // axios.interceptors.response.use(
 //   function (response) {
-//     // Cualquier código de estado que se encuentre dentro del rango de 2xx hace que se active esta función
+//     Cualquier código de estado que se encuentre dentro del rango de 2xx hace que se active esta función
 //     return response;
 //   },
 //   function (error) {
-//     // Cualquier código de estado que quede fuera del rango de 2xx hace que se active esta función
-//     // Detener el flujo de la solicitud aquí
+//     Cualquier código de estado que quede fuera del rango de 2xx hace que se active esta función
+//     Detener el flujo de la solicitud aquí
 //     return Promise.reject(error);
-//     //console.error('Error de Respuesta:', error.message);
-//     //throw error; // Lanza una excepción para detener el flujo de respuesta
+//     console.error('Error de Respuesta:', error.message);
+//     throw error; // Lanza una excepción para detener el flujo de respuesta
 //   }
 // );
 
@@ -41,7 +41,7 @@ const fetchWithRetries = async (config: AxiosRequestConfig, retries: number): Pr
     if (retries < 4 && (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT')) { // Reintento solo para errores de tiempo de espera
     
       Swal.fire({
-        title: 'Reintentando envio...: '+ retries + " de 5",
+        title: 'Reenviando...: '+ retries + " de 3",
         icon: 'warning',
         timer: 2000,
         showConfirmButton: false

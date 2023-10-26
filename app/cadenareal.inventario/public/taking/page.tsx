@@ -13,7 +13,7 @@ const Taking = () => {
   const txtCodigoRef = useRef<HTMLInputElement | null>(null); //referencia a txt_codigo para focus
   const txtusuarioRef = useRef<HTMLInputElement | null>(null); //referencia a txt_usuario para focus
   const [formSubmitted, setFormSubmitted] = useState(false); //para rastrear si el formulario se ha enviado.
-
+ 
   const formik = useFormik({
     initialValues: {
       txt_usuario: "",
@@ -120,13 +120,8 @@ const Taking = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-200">
-      <form
-        id="form"
-        onSubmit={formik.handleSubmit}
-        onKeyDown={(e) => {
-          e.key === "Enter" && formik.handleSubmit; //Guardar con ENTER
-        }}
-      >
+      <form id="form" onSubmit={formik.handleSubmit}>
+        
         <div className="bg-white w-96 p-6 rounded shadow-sm">
           <h3 className="flex flex-col items-center justify-center mb-4 ">
             <span className="text-gray-700 font-bold text-2xl mb-2">
@@ -220,13 +215,13 @@ const Taking = () => {
             name="txt_codigo"
             onChange={formik.handleChange}
             onBlur={(e) => {
-              formik.handleBlur(e); 
-              buscar(); //Busqueda al perder el foco. Con Scan() se pierde el foco automáticamente.
+              //formik.handleBlur(e); // Ejecutar el evento onBlur de Formik
+              buscar(); // Ejecutar tu evento personalizado
             }}
             value={formik.values.txt_codigo}
             min="1"
             max="9999999999999"
-            ref={txtCodigoRef} //Referencia personalizada para captura el foco (No es la mejor manera)
+            ref={txtCodigoRef}
             required
           />
           {formik.touched.txt_codigo && formik.errors.txt_codigo ? (
@@ -250,7 +245,7 @@ const Taking = () => {
             readOnly
             required
           />
-          {formik.errors.txt_descripcion ? (
+          {formik.touched.txt_descripcion && formik.errors.txt_descripcion ? (
             <div className="text-gray-500">{formik.errors.txt_descripcion}</div>
           ) : null}
 
@@ -268,10 +263,10 @@ const Taking = () => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.txt_cantidad}
-            step="0.01" //Permite el uso de decimales con 'punto'
+            step="0.01"
             min="-9999.99"
             max="9999.99"
-            ref={txtCantidadRef} //Referencia personalizada para captura el foco (No es la mejor manera)
+            ref={txtCantidadRef}
             required
           />
           {formik.touched.txt_cantidad && formik.errors.txt_cantidad ? (
@@ -282,7 +277,7 @@ const Taking = () => {
             <button
               type="submit"
               className="bg-green-600 font-bold text-lg w-full text-gray-100 py-2 rounded hover:bg-green-800 transition-colors"
-              //disabled={formSubmitted}
+              disabled={formSubmitted}
             >
               Confirmar
             </button>
